@@ -72,7 +72,6 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 		  id: userID,
 		  objectName,
 	  };
-      console.log('Created active Games');
       return res.send({
 		  type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 		  data: {
@@ -102,19 +101,19 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     console.error(`unknown command: ${name}`);
     return res.status(400).json({ error: 'unknown command' });
   }
-    console.log('Successfully sent request for command')
   if (type === InteractionType.MESSAGE_COMPONENT) {
-      console.log('Compiling messsage component')
 	  // custom_id set in payload when sending message compenent
 	  const componentId = data.custom_id;
-
+        console.log('Entering if statement for accept button')
 	  if (componentId.startsWith('accept_button_')) {
 		  // get the associated game ID
+          console.log('Getting associated game ID')
 	  	const gameId = componentId.replace('accept_button_', '');
 		//Delete message with token in request body
 		const endpoint = `webhooks/${process.env.APP_ID}/${req.body.token}/messages/${req.body.message.id}`;
 		try {
-			await res.send({
+            console.log('Attempting to send response message to choice')
+			res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
 					//Indicates it'll be an ephemeral message
@@ -130,7 +129,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
                                 {
                                     type: MessageComponentTypes.STRING_SELECT,
                                     // Append game ID
-                                    custom_id: `select_choce_${gameId}`,
+                                    custom_id: `select_choice_${gameId}`,
                                     options: getShuffledOptions(),
                                 },
                             ],
@@ -149,12 +148,14 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         
         if (activeGames[gameId]) {
             // Interaction context
+            console.log('Entering interaction context')
             const context = req.body.context;
             //Get user ID and object choice for responding user
             //User ID is in user field for (G)DMs and member for servers
             const userID = context === 0 ? req.body.member.user.id : req.body.user.id;
             const objectName = data.values[0];
-            // Clculate result from helper function
+            // Calculate result from helper function
+            console.log('Calculating result from helper function')
             const resultStr = getResult(activeGames[gameId], {
                 id: userID,
                 objectName,
@@ -165,22 +166,23 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             // Update message with token in request body
             const endpoint = `webhooks/${process.env.APP_ID}/${req.body.token}/messages/${req.body.message.id}`;
 
-            
+            console.log('Removing game from storage and establishing endpoint') 
             try {
-                await res.send({
+                res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
                         flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-                        compenents: [
+                        components: [
                           {
                             type: MessageComponentTypes.TEXT_DISPLAY,
-                            content: resultStr
+                            content: resultStr,
                         }
                         ]
                     },
                 });
+                console.log('Message sent, updating ephemeral message');
                 //Update ephemeral message
-                await DiscordRequest(endpoint, {
+                DiscordRequest(endpoint, {
                     method: 'PATCH',
                     body: {
                         components: [
@@ -191,6 +193,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
                         ],
                     },
                 });
+                console.log('ephemeral message sent');
             } catch (err) {
                 console.error('Error sending message: ', err);
             }
