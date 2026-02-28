@@ -10,7 +10,6 @@ import {
 } from 'discord-interactions';
 import { getRandomEmoji, DiscordRequest } from './utils.js';
 import { getShuffledOptions, getResult } from './game.js';
-
 // Create an express app
 const app = express();
 // Get port, or default to 3000
@@ -66,7 +65,6 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 	  const userID = context === 0 ? req.body.member.user.id : req.body.user.id;
 	  //User's object choise --> Rock Paper or Scissors
 	  const objectName = req.body.data.options[0].value;
-
 	  // Create active games using message ID as the game ID
 	  activeGames[id] = {
 		  id: userID,
