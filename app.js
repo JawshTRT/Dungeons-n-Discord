@@ -73,32 +73,32 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 		  objectName,
 	  };
       console.log('Created active Games');
-      	  return res.send({
+      return res.send({
 		  type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 		  data: {
 			flags: InteractionResponseFlags.IS_COMPONENTS_V2,
 			components: [
                 {
-				type: MessageComponentTypes.TEXT_DISPLAY,
-				//Fetches a random emoji to send from a helper function
-				content: `Rock papers scissors challenge from <@${userID}>`,
+                    type: MessageComponentTypes.TEXT_DISPLAY,
+                    content: `Rock papers scissors challenge from <@${userID}>`
                 },
-			//{
-			//	type: MessageComponentTypes.ACTION_ROW,
-			//	compenents: [
-            //        {
-			//		type: MessageComponentTypes.BUTTON,
-			//		// Append the game ID to use later on
-			//		cust: `accept_button_${req.body.id}`,
-			//		label: 'Accept',
-			//		style: ButtonStyleTypes.PRIMARY,
-			//	},
-            //  ],	
-		    //},
-	      ],
-	    },
-     });
-    }
+                {
+                    type: MessageComponentTypes.ACTION_ROW,
+                    //Fetches a random emoji to send from a helper function
+                    components: [
+                        {
+                            type: MessageComponentTypes.BUTTON,
+                            // Append the game ID to use later on
+                            custom_id: `accept_button_${req.body.id}`,
+                            label: 'Accept',
+                            style: ButtonStyleTypes.PRIMARY,
+                        }
+                    ]
+                }
+              ],	
+            },
+         });
+        }
     console.error(`unknown command: ${name}`);
     return res.status(400).json({ error: 'unknown command' });
   }
@@ -152,11 +152,11 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             const context = req.body.context;
             //Get user ID and object choice for responding user
             //User ID is in user field for (G)DMs and member for servers
-            const userId = context === 0 ? req.body.member.user.id : req.body.user.id;
+            const userID = context === 0 ? req.body.member.user.id : req.body.user.id;
             const objectName = data.values[0];
             // Clculate result from helper function
             const resultStr = getResult(activeGames[gameId], {
-                id: userId,
+                id: userID,
                 objectName,
             });
 
